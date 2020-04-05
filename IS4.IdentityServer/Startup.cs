@@ -13,6 +13,7 @@ using IS4.IdentityServer.Extension.Identity;
 using IS4.IdentityServer.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
+using IS4.IdentityServer.Extension.IdentityServer.Account;
 
 namespace IS4.IdentityServer
 {
@@ -30,88 +31,91 @@ namespace IS4.IdentityServer
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllersWithViews(); //ÆôÓÃmvc
+            services.AddControllersWithViews(); //å¯ç”¨mvc
             services.AddRazorPages();
 
             /*
-             * 1¡¢add-migration InitialPersistedGrantDb -c PersistedGrantDbContext -OutputDir EntityFramework/Migrations/PersistedGrantDb 
-               2¡¢add-migration InitialConfigurationDb -c ConfigurationDbContext -OutputDir EntityFramework/Migrations/ConfigurationDb
-               3¡¢add-migration InitialApplicationDb -c ApplicationDbContext -OutputDir EntityFramework/Migrations/ApplicationDb
-               4¡¢update-database -c PersistedGrantDbContext
-               5¡¢update-database -c ConfigurationDbContext
-               6¡¢update-database -c ApplicationDbContext
+             * 1ã€add-migration InitialPersistedGrantDb -c PersistedGrantDbContext -OutputDir EntityFramework/Migrations/PersistedGrantDb 
+               2ã€add-migration InitialConfigurationDb -c ConfigurationDbContext -OutputDir EntityFramework/Migrations/ConfigurationDb
+               3ã€add-migration InitialApplicationDb -c ApplicationDbContext -OutputDir EntityFramework/Migrations/ApplicationDb
+               4ã€update-database -c PersistedGrantDbContext
+               5ã€update-database -c ConfigurationDbContext
+               6ã€update-database -c ApplicationDbContext
              */
             var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
 
-            //×¢²áIdentityÊı¾İ¿âContext
+            //æ³¨å†ŒIdentityæ•°æ®åº“Context
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("IdentityServer")));
 
-            //ÆôÓÃ Identity ·şÎñ Ìí¼ÓÖ¸¶¨µÄÓÃ»§ºÍ½ÇÉ«ÀàĞÍµÄÄ¬ÈÏ±êÊ¶ÏµÍ³ÅäÖÃ
+            //å¯ç”¨ Identity æœåŠ¡ æ·»åŠ æŒ‡å®šçš„ç”¨æˆ·å’Œè§’è‰²ç±»å‹çš„é»˜è®¤æ ‡è¯†ç³»ç»Ÿé…ç½®
             services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+            {
+                //å¯†ç è®¾ç½®
+                options.Password = new PasswordOptions
                 {
-                    //ÃÜÂëÉèÖÃ
-                    options.Password = new PasswordOptions
-                    {
-                        RequireDigit = true,//ÒªÇóÃÜÂëÖĞµÄÊı×Ö½éÓÚ0-9 Ö®¼ä¡£
-                        RequiredLength = 8,//ÃÜÂëµÄ×îĞ¡³¤¶È¡£
-                        RequireNonAlphanumeric = false,//ÃÜÂëÖĞĞèÒªÒ»¸ö·Ç×ÖÄ¸Êı×Ö×Ö·û¡£
-                        RequireLowercase = true,//ÃÜÂëÖĞĞèÒªĞ¡Ğ´×Ö·û¡£
-                        RequireUppercase = true,//ÃÜÂëÖĞĞèÒª´óĞ´×Ö·û¡£
-                        RequiredUniqueChars = 1//ĞèÒªÃÜÂëÖĞµÄ·ÇÖØ¸´×Ö·ûÊı¡£
-                    };
-                    //Ëø¶¨ÉèÖÃ
-                    options.Lockout = new LockoutOptions
-                    {
-                        AllowedForNewUsers = true,//È·¶¨ĞÂÓÃ»§ÊÇ·ñ¿ÉÒÔËø¶¨¡£
-                        DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5),//	Ëø¶¨·¢ÉúÊ±ÓÃ»§±»Ëø¶¨µÄÊ±¼ä³¤¶È¡£
-                        MaxFailedAccessAttempts = 3 //Èç¹ûÆôÓÃÁËËø¶¨£¬ÔòÔÚÓÃ»§±»Ëø¶¨Ö®Ç°Ê§°ÜµÄ·ÃÎÊ³¢ÊÔ´ÎÊı¡£
-                    };
-                    //µÇÂ½ÉèÖÃ
-                    options.SignIn = new SignInOptions
-                    {
-                        RequireConfirmedEmail = false, //ĞèÒªÈ·ÈÏµç×ÓÓÊ¼şµÇÂ¼¡£
-                        RequireConfirmedPhoneNumber = false//ĞèÒªÈ·ÈÏµç»°ºÅÂë²ÅÄÜµÇÂ¼¡£
-                    };
-                    //ÓÃ»§ÉèÖÃ
-                    options.User = new UserOptions
-                    {
-                        AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@.",//ÓÃ»§ÃûÖĞÔÊĞíÊ¹ÓÃµÄ×Ö·û¡£
-                        RequireUniqueEmail = true //ÒªÇóÃ¿¸öÓÃ»§¶¼ÓĞÎ¨Ò»µÄµç×ÓÓÊ¼ş¡£
-                    };
-                    
-                })
+                    RequireDigit = true,//è¦æ±‚å¯†ç ä¸­çš„æ•°å­—ä»‹äº0-9 ä¹‹é—´ã€‚
+                    RequiredLength = 8,//å¯†ç çš„æœ€å°é•¿åº¦ã€‚
+                    RequireNonAlphanumeric = false,//å¯†ç ä¸­éœ€è¦ä¸€ä¸ªéå­—æ¯æ•°å­—å­—ç¬¦ã€‚
+                    RequireLowercase = true,//å¯†ç ä¸­éœ€è¦å°å†™å­—ç¬¦ã€‚
+                    RequireUppercase = true,//å¯†ç ä¸­éœ€è¦å¤§å†™å­—ç¬¦ã€‚
+                    RequiredUniqueChars = 1//éœ€è¦å¯†ç ä¸­çš„éé‡å¤å­—ç¬¦æ•°ã€‚
+                };
+                //é”å®šè®¾ç½®
+                options.Lockout = new LockoutOptions
+                {
+                    AllowedForNewUsers = true,//ç¡®å®šæ–°ç”¨æˆ·æ˜¯å¦å¯ä»¥é”å®šã€‚
+                    DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5),//	é”å®šå‘ç”Ÿæ—¶ç”¨æˆ·è¢«é”å®šçš„æ—¶é—´é•¿åº¦ã€‚
+                    MaxFailedAccessAttempts = 3 //å¦‚æœå¯ç”¨äº†é”å®šï¼Œåˆ™åœ¨ç”¨æˆ·è¢«é”å®šä¹‹å‰å¤±è´¥çš„è®¿é—®å°è¯•æ¬¡æ•°ã€‚
+                };
+                //ç™»é™†è®¾ç½®
+                options.SignIn = new SignInOptions
+                {
+                    RequireConfirmedEmail = false, //éœ€è¦ç¡®è®¤ç”µå­é‚®ä»¶ç™»å½•ã€‚
+                    RequireConfirmedPhoneNumber = false//éœ€è¦ç¡®è®¤ç”µè¯å·ç æ‰èƒ½ç™»å½•ã€‚
+                };
+                //ç”¨æˆ·è®¾ç½®
+                options.User = new UserOptions
+                {
+                    AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@.",//ç”¨æˆ·åä¸­å…è®¸ä½¿ç”¨çš„å­—ç¬¦ã€‚
+                    RequireUniqueEmail = true //è¦æ±‚æ¯ä¸ªç”¨æˆ·éƒ½æœ‰å”¯ä¸€çš„ç”µå­é‚®ä»¶ã€‚
+                };
+
+            })
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
-            //×¢²á×Ô¶¨ÒåÃÜÂëÑéÖ¤Æ÷
+            //æ³¨å†Œè‡ªå®šä¹‰å¯†ç éªŒè¯å™¨
             services.AddTransient<IPasswordValidator<ApplicationUser>, CustomPasswordValidator>();
             services.AddTransient<IEmailSender, EmailSender>();
 
+            //ä¾èµ–æ³¨å…¥
+            services.AddTransient<IAccount, Account>();
+
             var builder = services.AddIdentityServer()
 
-                //×¢²áÅäÖÃÊı¾İ<¿Í»§¶ËºÍ×ÊÔ´>
+                //æ³¨å†Œé…ç½®æ•°æ®<å®¢æˆ·ç«¯å’Œèµ„æº>
                 .AddConfigurationStore(options =>
                     options.ConfigureDbContext = cfg =>
                         cfg.UseSqlServer(Configuration.GetConnectionString("NetCoreIdentity"),
                             sql => sql.MigrationsAssembly(migrationsAssembly)))
 
-                //×¢²á²Ù×÷Êı¾İ (codes, tokens, consents)
+                //æ³¨å†Œæ“ä½œæ•°æ® (codes, tokens, consents)
                 .AddOperationalStore(options =>
                 {
                     options.ConfigureDbContext = cfg =>
                         cfg.UseSqlServer(Configuration.GetConnectionString("NetCoreIdentity"),
                             sql => sql.MigrationsAssembly(migrationsAssembly));
 
-                    //Æô¶¯×Ô¶¯ÇåÀítoken
+                    //å¯åŠ¨è‡ªåŠ¨æ¸…ç†token
                     options.EnableTokenCleanup = true;
-                    //ÇåÀítoken¼ä¸ôÊ±¼ä
+                    //æ¸…ç†tokené—´éš”æ—¶é—´
                     options.TokenCleanupInterval = 3600;
                 })
 
                 .AddAspNetIdentity<ApplicationUser>();
 
-            //¿ª·¢»·¾³Ê¹ÓÃ¿ª·¢Ö¤Êé,ÕıÊ½»·¾³Ê¹ÓÃÕıÊ½Ö¤Êé
+            //å¼€å‘ç¯å¢ƒä½¿ç”¨å¼€å‘è¯ä¹¦,æ­£å¼ç¯å¢ƒä½¿ç”¨æ­£å¼è¯ä¹¦
             if (env.IsDevelopment())
             {
                 builder.AddDeveloperSigningCredential();
@@ -123,7 +127,7 @@ namespace IS4.IdentityServer
                     Configuration["Certificates:Password"]));
             }
 
-            services.AddAuthentication(); //×¢ÈëÈÏÖ¤
+            services.AddAuthentication(); //æ³¨å…¥è®¤è¯
 
 
         }

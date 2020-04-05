@@ -45,6 +45,16 @@ namespace IS4.IdentityServer
                     },
                     AllowOfflineAccess = true //允许刷新token
 
+                },
+                new Client
+                {
+                    ClientId="Client.js",
+                    ClientSecrets=new List<Secret>
+                    {
+                        new Secret("Secret.js".Sha256())
+                    },
+                    AllowedGrantTypes=GrantTypes.Implicit,
+
                 }
             };
     }
