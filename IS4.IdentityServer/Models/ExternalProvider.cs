@@ -1,5 +1,4 @@
-﻿using System;
-namespace IS4.IdentityServer.Models
+﻿namespace IS4.IdentityServer.Models
 {
     public class ExternalProvider
     {

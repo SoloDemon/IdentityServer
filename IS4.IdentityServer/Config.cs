@@ -29,12 +29,13 @@ namespace IS4.IdentityServer
             {
                 new Client
                 {
-                    ClientId = "Client", //客户端名称
+                    ClientId = "Client.ROP", //客户端ID
+                    ClientName="资源所有者密码模式",
                     ClientSecrets = new List<Secret> //客户端用来获取token
                     {
                         new Secret("Secret".Sha256())
                     },
-                    AllowedGrantTypes = GrantTypes.ResourceOwnerPasswordAndClientCredentials, //使用资源所有者密码和客户端证书模式获取token
+                    AllowedGrantTypes = GrantTypes.ResourceOwnerPassword, //使用资源所有者密码和客户端证书模式获取token
                     AllowedCorsOrigins = {"http://localhost:5001"},
                     AllowedScopes = new List<string> //允许的访问范围
                     {
@@ -48,13 +49,66 @@ namespace IS4.IdentityServer
                 },
                 new Client
                 {
-                    ClientId="Client.js",
+                    ClientId="Client.Implicit",
+                    ClientName="隐式许可模式",
                     ClientSecrets=new List<Secret>
                     {
                         new Secret("Secret.js".Sha256())
                     },
                     AllowedGrantTypes=GrantTypes.Implicit,
+                    //AllowedCorsOrigins = {"http://localhost:5001"},
+                    // 登录成功回调处理地址，处理回调返回的数据
+                    RedirectUris = { "http://localhost:5001/signin-oidc" },
 
+                    // where to redirect to after logout
+                    PostLogoutRedirectUris = { "http://localhost:5001/signout-callback-oidc" },
+                    AllowedScopes = new List<string> //允许的访问范围
+                    {
+                        IdentityServerConstants.StandardScopes.OpenId,
+                        IdentityServerConstants.StandardScopes.Profile,
+                        "Client.Api",
+                        "roles"
+                    }
+
+                },
+                new Client
+                {
+                    ClientId = "Client.Credentials",
+                    ClientName = "客户端证书模式",
+                    ClientSecrets = {new Secret("secret".Sha256())},
+                    AllowedGrantTypes=GrantTypes.ClientCredentials,
+                    AllowedCorsOrigins = {"http://localhost:5001"},
+                    AllowedScopes = new List<string> //允许的访问范围
+                    {
+                        IdentityServerConstants.StandardScopes.OpenId,
+                        IdentityServerConstants.StandardScopes.Profile,
+                        "Client.Api",
+                        "roles"
+                    }
+                },
+                new Client
+                {
+                    ClientId = "Client.AuthorizationCode",
+                    ClientName = "授权码模式",
+                    ClientSecrets = {new Secret("secret".Sha256())},
+                    AllowedGrantTypes = GrantTypes.Code,   //授权码模式
+                    RequireConsent = false,//隐藏同意授权页面
+                    RequirePkce = true,
+                    
+                    // 登陆后跳转地址
+                    RedirectUris = { "http://localhost:5001/signin-oidc" },
+
+                    // 登出后跳转地址
+                    PostLogoutRedirectUris = { "http://localhost:5001/signout-callback-oidc" },
+
+                    AllowedScopes = new List<string>
+                    {
+                        IdentityServerConstants.StandardScopes.OpenId,
+                        IdentityServerConstants.StandardScopes.Profile,
+                        "Client.Api",
+                        "roles"
+                    },
+                    AllowOfflineAccess = true
                 }
             };
     }

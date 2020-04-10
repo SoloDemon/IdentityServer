@@ -5,6 +5,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AspNet.Security.OAuth.Baidu" Version="3.1.0" />
+    <PackageReference Include="AspNet.Security.OAuth.NetEase" Version="3.1.0" />
+    <PackageReference Include="AspNet.Security.OAuth.QQ" Version="3.1.0" />
+    <PackageReference Include="AspNet.Security.OAuth.Weibo" Version="3.1.0" />
+    <PackageReference Include="AspNet.Security.OAuth.Weixin" Version="3.1.0" />
     <PackageReference Include="IdentityServer4" Version="3.1.2" />
     <PackageReference Include="IdentityServer4.AspNetIdentity" Version="3.1.2" />
     <PackageReference Include="IdentityServer4.EntityFramework" Version="3.1.2" />
@@ -20,27 +25,25 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.1.2" />
+    <PackageReference Include="System.Security.Principal.Windows" Version="4.7.0" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Cert\" />
-    <Folder Include="Controllers\" />
-    <Folder Include="Views\" />
-    <Folder Include="Views\Account\" />
-    <Folder Include="Extension\IdentityServer\" />
-    <Folder Include="Extension\IdentityServer\Account\" />
+    <Folder Include="Cert\" />
+    <Folder Include="Models\EntityModels\" />
   </ItemGroup>
 
   <ItemGroup>
     <None Remove="IS4.pfx" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Cert\IS4.pfx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <Content Remove="wwwroot\favicon.ico" />
   </ItemGroup>
   <ItemGroup>
-    <Content Remove="wwwroot\favicon.ico" />
+    <None Update="Cert\IS4.pfx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>
 

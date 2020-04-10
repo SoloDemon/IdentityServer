@@ -1,19 +1,22 @@
-using System;
+using IS4.IdentityServer.EntityFramework;
+using IS4.IdentityServer.Extension;
+using IS4.IdentityServer.Extension.Identity;
+using IS4.IdentityServer.Extension.Validator;
+using IS4.IdentityServer.Models;
+using IS4.IdentityServer.Models.Options;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System;
 using System.IO;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
-using IS4.IdentityServer.EntityFramework;
-using IS4.IdentityServer.Extension.Identity;
-using IS4.IdentityServer.Models;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
-using IS4.IdentityServer.Extension.IdentityServer.Account;
 
 namespace IS4.IdentityServer
 {
@@ -27,14 +30,16 @@ namespace IS4.IdentityServer
             Configuration = configuration;
             this.env = env;
         }
-        // This method gets called by the runtime. Use this method to add services to the container.
-        // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
+        //这个方法被运行时调用。使用此方法将服务添加到容器中。
+        //有关如何配置应用程序的更多信息，请访问https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSameSiteCookiePolicy();
             services.AddControllersWithViews(); //启用mvc
             services.AddRazorPages();
 
             /*
+             * 手动创建数据库迁移命令
              * 1、add-migration InitialPersistedGrantDb -c PersistedGrantDbContext -OutputDir EntityFramework/Migrations/PersistedGrantDb 
                2、add-migration InitialConfigurationDb -c ConfigurationDbContext -OutputDir EntityFramework/Migrations/ConfigurationDb
                3、add-migration InitialApplicationDb -c ApplicationDbContext -OutputDir EntityFramework/Migrations/ApplicationDb
@@ -49,7 +54,7 @@ namespace IS4.IdentityServer
                 options.UseSqlServer(Configuration.GetConnectionString("IdentityServer")));
 
             //启用 Identity 服务 添加指定的用户和角色类型的默认标识系统配置
-            services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+            services.AddIdentity<ApplicationUser, ApplicationRole>(options =>
             {
                 //密码设置
                 options.Password = new PasswordOptions
@@ -89,10 +94,27 @@ namespace IS4.IdentityServer
             services.AddTransient<IPasswordValidator<ApplicationUser>, CustomPasswordValidator>();
             services.AddTransient<IEmailSender, EmailSender>();
 
-            //依赖注入
-            services.AddTransient<IAccount, Account>();
+            services.ConfigureApplicationCookie(options =>
+            {
+                options.LoginPath = new PathString("/oauth2/authorize");
+                options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+            });
 
-            var builder = services.AddIdentityServer()
+            var builder = services.AddIdentityServer(options =>
+            {
+                options.Events.RaiseErrorEvents = true;
+                options.Events.RaiseInformationEvents = true;
+                options.Events.RaiseFailureEvents = true;
+                options.Events.RaiseSuccessEvents = true;
+                //options.IssuerUri = "https://authorize.hwyuan.com";
+                //options.PublicOrigin = "https://authorize.hwyuan.com";
+                options.UserInteraction = new IdentityServer4.Configuration.UserInteractionOptions
+                {
+                    LoginUrl = "/oauth2/authorize",//登录地址  
+                };
+            })
+                //扩展授权验证器
+                .AddExtensionGrantValidator<WeiXinOpenGrantValidator>()
 
                 //注册配置数据<客户端和资源>
                 .AddConfigurationStore(options =>
@@ -113,6 +135,7 @@ namespace IS4.IdentityServer
                     options.TokenCleanupInterval = 3600;
                 })
 
+
                 .AddAspNetIdentity<ApplicationUser>();
 
             //开发环境使用开发证书,正式环境使用正式证书
@@ -127,14 +150,25 @@ namespace IS4.IdentityServer
                     Configuration["Certificates:Password"]));
             }
 
-            services.AddAuthentication(); //注入认证
+            services.AddAuthentication()
+                .AddBaidu(options =>
+                {
+                    options.
+                }); //注入认证
 
-
+            //注册全局配置信息
+            services.Configure<AccountOptions>(Configuration.GetSection("AccountOptions"));
+            services.Configure<ConsentOptions>(Configuration.GetSection("ConsentOptions"));
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        //此方法由运行时调用。使用此方法配置HTTP请求管道。
         public void Configure(IApplicationBuilder app)
         {
+            //初始化数据库,如果需要初始化数据库,请在启动的时候加入参数 --InitDB=true.
+            if (Configuration["InitDB"] == "true")
+            {
+                app.InitializeIdentityServerDatabase();
+            }
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -155,7 +189,7 @@ namespace IS4.IdentityServer
             {
                 endpoints.MapControllerRoute(
                     name: "default",
-                    pattern: "{controller=Home}/{action=Index}/{id?}");
+                    pattern: "{controller=OAuth2}/{action=authorize}/{id?}");
                 endpoints.MapRazorPages();
             });
         }
