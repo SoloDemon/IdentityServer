@@ -1,3 +1,4 @@
+using IdentityServer4;
 using IS4.IdentityServer.EntityFramework;
 using IS4.IdentityServer.Extension;
 using IS4.IdentityServer.Extension.Identity;
@@ -13,6 +14,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.IO;
 using System.Reflection;
@@ -153,7 +155,25 @@ namespace IS4.IdentityServer
             services.AddAuthentication()
                 .AddBaidu(options =>
                 {
-                    options.
+                    options.ClientId = "19362004";
+                    options.ClientSecret = "4ZUTd21V7oo6ePrcKWq7NosmPukrGGqx";
+                    options.AuthorizationEndpoint = "http://openapi.baidu.com";
+
+                })
+                .AddOpenIdConnect("oidc", "OpenID Connect", options =>
+                {
+                    options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
+                    options.SignOutScheme = IdentityServerConstants.SignoutScheme;
+                    options.SaveTokens = true;
+
+                    options.Authority = "https://demo.identityserver.io/";
+                    options.ClientId = "implicit";
+
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        NameClaimType = "name",
+                        RoleClaimType = "role"
+                    };
                 }); //注入认证
 
             //注册全局配置信息
