@@ -13,6 +13,8 @@ using IS4.IdentityServer.Extension.IdentityServer;
 using IS4.IdentityServer.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
@@ -22,7 +24,8 @@ namespace IS4.IdentityServer.Controllers
     [AllowAnonymous]
     public class ExternalController : Controller
     {
-        private readonly TestUserStore _users;
+        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IUserStore<ApplicationUser> _store;
         private readonly IIdentityServerInteractionService _interaction;
         private readonly IClientStore _clientStore;
         private readonly IEventService _events;
@@ -33,15 +36,15 @@ namespace IS4.IdentityServer.Controllers
             IClientStore clientStore,
             IEventService events,
             IOptions<AccountOptions> accountOptions,
-            TestUserStore users = null)
+            UserManager<ApplicationUser> userManager,
+            IUserStore<ApplicationUser> store)
         {
-            //如果TestUserStore不在DI中，那么我们将只使用全局用户集合
-            //在这里你可以插入你自己的自定义身份管理库。净的身份)
-            _users = users ?? new TestUserStore(TestUsers.Users);
+            _userManager = userManager;
             _accountOptions = accountOptions.Value;
             _interaction = interaction;
             _clientStore = clientStore;
             _events = events;
+            _store = store;
         }
 
         /// <summary>
@@ -101,7 +104,7 @@ namespace IS4.IdentityServer.Controllers
                 ///这可能是您启动用户注册的自定义工作流的地方
                 //在这个示例中，我们没有展示如何实现它，而是作为我们的示例实现
                 //简单地自动提供新的外部用户
-                user = AutoProvisionUser(provider, providerUserId, claims);
+                //user = AutoProvisionUser(provider, providerUserId, claims);
             }
 
             //这使我们能够收集任何额外的权利要求书或财产
@@ -114,8 +117,8 @@ namespace IS4.IdentityServer.Controllers
             ProcessLoginCallbackForSaml2p(result, additionalLocalClaims, localSignInProps);
 
             // 为用户发布认证cookie
-            await _events.RaiseAsync(new UserLoginSuccessEvent(provider, providerUserId, user.SubjectId, user.Username));
-            await HttpContext.SignInAsync(user.SubjectId, user.Username, provider, localSignInProps, additionalLocalClaims.ToArray());
+            await _events.RaiseAsync(new UserLoginSuccessEvent(provider, providerUserId, user.Id.ToString(), user.UserName));
+            await HttpContext.SignInAsync(user.Id.ToString(), user.UserName, provider, localSignInProps, additionalLocalClaims.ToArray());
 
             // 删除外部身份验证期间使用的临时cookie
             await HttpContext.SignOutAsync(IdentityServer4.IdentityServerConstants.ExternalCookieAuthenticationScheme);
@@ -185,7 +188,7 @@ namespace IS4.IdentityServer.Controllers
             }
         }
 
-        private (TestUser user, string provider, string providerUserId, IEnumerable<Claim> claims) FindUserFromExternalProvider(AuthenticateResult result)
+        private (ApplicationUser user, string provider, string providerUserId, IEnumerable<Claim> claims) FindUserFromExternalProvider(AuthenticateResult result)
         {
             var externalUser = result.Principal;
 
@@ -204,16 +207,17 @@ namespace IS4.IdentityServer.Controllers
             var providerUserId = userIdClaim.Value;
 
             //寻找外部用户
-            var user = _users.FindByExternalProvider(provider, providerUserId);
+            var user = _userManager.FindByExternalProviderAsync(provider, providerUserId);
+            //var user = _users.FindByExternalProvider(provider, providerUserId);
 
             return (user, provider, providerUserId, claims);
         }
 
-        private TestUser AutoProvisionUser(string provider, string providerUserId, IEnumerable<Claim> claims)
-        {
-            var user = _users.AutoProvisionUser(provider, providerUserId, claims.ToList());
-            return user;
-        }
+        //private TestUser AutoProvisionUser(string provider, string providerUserId, IEnumerable<Claim> claims)
+        //{
+        //    var user = _users.AutoProvisionUser(provider, providerUserId, claims.ToList());
+        //    return user;
+        //}
 
         private void ProcessLoginCallbackForOidc(AuthenticateResult externalResult, List<Claim> localClaims, AuthenticationProperties localSignInProps)
         {

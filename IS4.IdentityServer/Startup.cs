@@ -155,8 +155,8 @@ namespace IS4.IdentityServer
             services.AddAuthentication()
                 .AddBaidu(options =>
                 {
-                    options.ClientId = "19362004";
-                    options.ClientSecret = "4ZUTd21V7oo6ePrcKWq7NosmPukrGGqx";
+                    options.ClientId = "XBwES81batNGxZfDyxRclgGr";
+                    options.ClientSecret = "YrsKPhWVXcIEXMM7F40Ll4i2hqFHUsoA";
 
                 })
                 .AddOpenIdConnect("oidc", "OpenID Connect", options =>
