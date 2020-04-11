@@ -157,7 +157,6 @@ namespace IS4.IdentityServer
                 {
                     options.ClientId = "19362004";
                     options.ClientSecret = "4ZUTd21V7oo6ePrcKWq7NosmPukrGGqx";
-                    options.AuthorizationEndpoint = "http://openapi.baidu.com";
 
                 })
                 .AddOpenIdConnect("oidc", "OpenID Connect", options =>
