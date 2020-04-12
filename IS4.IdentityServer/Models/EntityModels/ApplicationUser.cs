@@ -65,16 +65,6 @@ namespace IS4.IdentityServer.Models
         public bool IsDelete { get; set; }
 
         /// <summary>
-        /// 外部应用用户名
-        /// </summary>
-        public string ProviderName { get; set; }
-
-        /// <summary>
-        /// 外部应用用户id
-        /// </summary>
-        public string ProviderSubjectId { get; set; }
-
-        /// <summary>
         /// 角色用户关系表
         /// </summary>
         public ICollection<ApplicationUserRole> UserRoles { get; set; }

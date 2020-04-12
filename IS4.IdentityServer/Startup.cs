@@ -1,6 +1,6 @@
 using IdentityServer4;
 using IS4.IdentityServer.EntityFramework;
-using IS4.IdentityServer.Extension;
+using IS4.IdentityServer.Extension.Commands;
 using IS4.IdentityServer.Extension.Identity;
 using IS4.IdentityServer.Extension.Validator;
 using IS4.IdentityServer.Models;
@@ -39,6 +39,8 @@ namespace IS4.IdentityServer
             services.AddSameSiteCookiePolicy();
             services.AddControllersWithViews(); //启用mvc
             services.AddRazorPages();
+            //启用HttpClient
+            services.AddHttpClient();
 
             /*
              * 手动创建数据库迁移命令
@@ -84,8 +86,8 @@ namespace IS4.IdentityServer
                 //用户设置
                 options.User = new UserOptions
                 {
-                    AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@.",//用户名中允许使用的字符。
-                    RequireUniqueEmail = true //要求每个用户都有唯一的电子邮件。
+                    AllowedUserNameCharacters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@.-",//用户名中允许使用的字符。
+                    RequireUniqueEmail = false //要求每个用户都有唯一的电子邮件。
                 };
 
             })
@@ -95,7 +97,8 @@ namespace IS4.IdentityServer
             //注册自定义密码验证器
             services.AddTransient<IPasswordValidator<ApplicationUser>, CustomPasswordValidator>();
             services.AddTransient<IEmailSender, EmailSender>();
-
+            services.AddTransient<IHttpHelper, HttpHelper>()
+;
             services.ConfigureApplicationCookie(options =>
             {
                 options.LoginPath = new PathString("/oauth2/authorize");
@@ -108,8 +111,8 @@ namespace IS4.IdentityServer
                 options.Events.RaiseInformationEvents = true;
                 options.Events.RaiseFailureEvents = true;
                 options.Events.RaiseSuccessEvents = true;
-                //options.IssuerUri = "https://authorize.hwyuan.com";
-                //options.PublicOrigin = "https://authorize.hwyuan.com";
+                options.IssuerUri = "https://authorize.hwyuan.com";
+                options.PublicOrigin = "https://authorize.hwyuan.com";
                 options.UserInteraction = new IdentityServer4.Configuration.UserInteractionOptions
                 {
                     LoginUrl = "/oauth2/authorize",//登录地址  
@@ -155,25 +158,27 @@ namespace IS4.IdentityServer
             services.AddAuthentication()
                 .AddBaidu(options =>
                 {
-                    options.ClientId = "XBwES81batNGxZfDyxRclgGr";
-                    options.ClientSecret = "YrsKPhWVXcIEXMM7F40Ll4i2hqFHUsoA";
-
-                })
-                .AddOpenIdConnect("oidc", "OpenID Connect", options =>
-                {
+                    options.ClientId = Configuration["OpenPlatform:Baidu:ApiKey"];
+                    options.ClientSecret = Configuration["OpenPlatform:Baidu:SecretKey"];
                     options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
-                    options.SignOutScheme = IdentityServerConstants.SignoutScheme;
                     options.SaveTokens = true;
 
-                    options.Authority = "https://demo.identityserver.io/";
-                    options.ClientId = "implicit";
+                });
+            //.AddOpenIdConnect("oidc", "OpenID Connect", options =>
+            //{
+            //    options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
+            //    options.SignOutScheme = IdentityServerConstants.SignoutScheme;
+            //    options.SaveTokens = true;
 
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        NameClaimType = "name",
-                        RoleClaimType = "role"
-                    };
-                }); //注入认证
+            //    options.Authority = "https://demo.identityserver.io/";
+            //    options.ClientId = "implicit";
+
+            //    options.TokenValidationParameters = new TokenValidationParameters
+            //    {
+            //        NameClaimType = "name",
+            //        RoleClaimType = "role"
+            //    };
+            //}); //注入认证
 
             //注册全局配置信息
             services.Configure<AccountOptions>(Configuration.GetSection("AccountOptions"));

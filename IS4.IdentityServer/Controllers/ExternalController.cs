@@ -9,6 +9,7 @@ using IdentityServer4.Events;
 using IdentityServer4.Services;
 using IdentityServer4.Stores;
 using IS4.IdentityServer.Extension.Attributes;
+using IS4.IdentityServer.Extension.Commands;
 using IS4.IdentityServer.Extension.IdentityServer;
 using IS4.IdentityServer.Models;
 using Microsoft.AspNetCore.Authentication;
@@ -30,6 +31,7 @@ namespace IS4.IdentityServer.Controllers
         private readonly IClientStore _clientStore;
         private readonly IEventService _events;
         private readonly AccountOptions _accountOptions;
+        private readonly IHttpHelper _httpHelper;
 
         public ExternalController(
             IIdentityServerInteractionService interaction,
@@ -37,7 +39,8 @@ namespace IS4.IdentityServer.Controllers
             IEventService events,
             IOptions<AccountOptions> accountOptions,
             UserManager<ApplicationUser> userManager,
-            IUserStore<ApplicationUser> store)
+            IUserStore<ApplicationUser> store,
+            IHttpHelper httpHelper)
         {
             _userManager = userManager;
             _accountOptions = accountOptions.Value;
@@ -45,6 +48,7 @@ namespace IS4.IdentityServer.Controllers
             _clientStore = clientStore;
             _events = events;
             _store = store;
+            _httpHelper = httpHelper;
         }
 
         /// <summary>
@@ -59,7 +63,7 @@ namespace IS4.IdentityServer.Controllers
             if (Url.IsLocalUrl(returnUrl) == false && _interaction.IsValidReturnUrl(returnUrl) == false)
             {
                 // 用户可能点击了一个恶意链接-应该被记录
-                throw new Exception("invalid return URL");
+                throw new Exception("无效的返回Url");
             }
 
             if (_accountOptions.WindowsAuthenticationSchemeName == provider)
@@ -94,17 +98,18 @@ namespace IS4.IdentityServer.Controllers
             var result = await HttpContext.AuthenticateAsync(IdentityServer4.IdentityServerConstants.ExternalCookieAuthenticationScheme);
             if (result?.Succeeded != true)
             {
-                throw new Exception("External authentication error");
+                throw new Exception("外部身份验证错误");
             }
-
+            //手动尝试http获取用户信息
+            //var token = result.Properties.Items[".Token.access_token"];
+            //var userInfo = await _httpHelper.PostAsync("https://openapi.baidu.com/rest/2.0/passport/users/getInfo", $"access_token={token}");
             // 查找我们的用户和外部提供商信息
-            var (user, provider, providerUserId, claims) = FindUserFromExternalProvider(result);
+            var (user, provider, providerUserId, claims) = await FindUserFromExternalProviderAsync(result);
+            //没有在is4找到用户
             if (user == null)
             {
-                ///这可能是您启动用户注册的自定义工作流的地方
-                //在这个示例中，我们没有展示如何实现它，而是作为我们的示例实现
-                //简单地自动提供新的外部用户
-                //user = AutoProvisionUser(provider, providerUserId, claims);
+                //如果用户不存在,创建用户
+                user = await AutoProvisionUserAsync(provider, providerUserId, claims);
             }
 
             //这使我们能够收集任何额外的权利要求书或财产
@@ -188,36 +193,122 @@ namespace IS4.IdentityServer.Controllers
             }
         }
 
-        private (ApplicationUser user, string provider, string providerUserId, IEnumerable<Claim> claims) FindUserFromExternalProvider(AuthenticateResult result)
+
+        /// <summary>
+        /// 从外部提供者信息查找用户
+        /// </summary>
+        /// <param name="result">返回url</param>
+        /// <returns></returns>
+        private async Task<(ApplicationUser user, string provider, string providerUserId, IEnumerable<Claim> claims)> FindUserFromExternalProviderAsync(AuthenticateResult result)
         {
+            //获取外部用户信息
             var externalUser = result.Principal;
 
-            //尝试确定外部用户的唯一id(由提供程序发出)
-            //最常见的索赔类型是子索赔和NameIdentifier
-            //根据外部提供者的不同，可能会使用其他一些索赔类型
+            //尝试查找外部用户唯一身份Id
+            //最常见的Claim类型是Subject和NameIdentifier
+            //根据外部提供者的不同，可能会使用其他一些Claim类型
             var userIdClaim = externalUser.FindFirst(JwtClaimTypes.Subject) ??
                               externalUser.FindFirst(ClaimTypes.NameIdentifier) ??
-                              throw new Exception("Unknown userid");
+                              throw new Exception("未知的用户标识");
 
             //删除用户id声明，这样我们在提供用户时就不会将其包含为额外声明
             var claims = externalUser.Claims.ToList();
             claims.Remove(userIdClaim);
 
+            //外部提供者Scheme
             var provider = result.Properties.Items["scheme"];
+            //外部用户唯一身份Id
             var providerUserId = userIdClaim.Value;
 
             //寻找外部用户
-            var user = _userManager.FindByExternalProviderAsync(provider, providerUserId);
-            //var user = _users.FindByExternalProvider(provider, providerUserId);
+            var user = await _userManager.FindByLoginAsync(provider, providerUserId);
 
             return (user, provider, providerUserId, claims);
         }
 
-        //private TestUser AutoProvisionUser(string provider, string providerUserId, IEnumerable<Claim> claims)
-        //{
-        //    var user = _users.AutoProvisionUser(provider, providerUserId, claims.ToList());
-        //    return user;
-        //}
+        /// <summary>
+        /// 自动创建外部登陆用户
+        /// </summary>
+        /// <param name="provider">外部供应商</param>
+        /// <param name="providerUserId">外部用户唯一身份Id</param>
+        /// <param name="claims">声明</param>
+        /// <returns></returns>
+        private async Task<ApplicationUser> AutoProvisionUserAsync(string provider, string providerUserId, IEnumerable<Claim> claims)
+        {
+            //创建一个需要添加的Claim列表
+            var claimList = new List<Claim>();
+            //获取用户名
+            var userName = claims.FirstOrDefault(x => x.Type == JwtClaimTypes.Name)?.Value ??
+                claims.FirstOrDefault(x => x.Type == ClaimTypes.Name)?.Value;
+            if (userName != null)
+            {
+                claimList.Add(new Claim(JwtClaimTypes.Name, userName));
+            }
+            else
+            {
+                var first = claims.FirstOrDefault(x => x.Type == JwtClaimTypes.GivenName)?.Value ??
+                    claims.FirstOrDefault(x => x.Type == ClaimTypes.GivenName)?.Value;
+                var last = claims.FirstOrDefault(x => x.Type == JwtClaimTypes.FamilyName)?.Value ??
+                    claims.FirstOrDefault(x => x.Type == ClaimTypes.Surname)?.Value;
+                if (first != null && last != null)
+                {
+                    claimList.Add(new Claim(JwtClaimTypes.Name, first + " " + last));
+                }
+                else if (first != null)
+                {
+                    claimList.Add(new Claim(JwtClaimTypes.Name, first));
+                }
+                else if (last != null)
+                {
+                    claimList.Add(new Claim(JwtClaimTypes.Name, last));
+                }
+            }
+            //email
+            var email = claims.FirstOrDefault(x => x.Type == JwtClaimTypes.Email)?.Value ??
+                claims.FirstOrDefault(x => x.Type == JwtClaimTypes.Email)?.Value;
+            if (email != null)
+            {
+                claimList.Add(new Claim(JwtClaimTypes.Email, email));
+            }
+            //创建用户
+            var user = CreateUser(provider, claims);
+            var identityResult = await _userManager.CreateAsync(user);
+            if (!identityResult.Succeeded)
+                throw new Exception(identityResult.Errors.First().Description);
+            if (claimList.Any())
+            {
+                identityResult = await _userManager.AddClaimsAsync(user, claimList);
+                if (!identityResult.Succeeded)
+                    throw new Exception(identityResult.Errors.First().Description);
+            }
+            identityResult = await _userManager.AddLoginAsync(user, new UserLoginInfo(provider, providerUserId, provider));
+            if (!identityResult.Succeeded)
+                throw new Exception(identityResult.Errors.First().Description);
+            return user;
+        }
+
+        /// <summary>
+        /// 创建用户
+        /// </summary>
+        /// <param name="provider">第三方供应商</param>
+        /// <param name="claims">声明列表</param>
+        /// <returns></returns>
+        private ApplicationUser CreateUser(string provider, IEnumerable<Claim> claims)
+        {
+            string portrait = "";
+            switch (provider)
+            {
+                case "Baidu":
+                    //头像
+                    portrait = claims.FirstOrDefault(x => x.Type == "urn:baidu:portrait")?.Value ?? "";
+                    break;
+            }
+            return new ApplicationUser
+            {
+                UserName = Guid.NewGuid().ToString(),
+                Portrait = portrait
+            };
+        }
 
         private void ProcessLoginCallbackForOidc(AuthenticateResult externalResult, List<Claim> localClaims, AuthenticationProperties localSignInProps)
         {
