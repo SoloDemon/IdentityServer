@@ -82,26 +82,25 @@ namespace IS4.IdentityServer.Controllers
                 var context = await _interaction.GetAuthorizationContextAsync(model.ReturnUrl);
                 if (context != null)
                 {
-                    //如果用户取消，将结果发送回IdentityServer，就好像他们取消了一样
-                    //拒绝同意(即使这个客户不需要同意)。
-                    //这将向客户端发送一个拒绝访问的OIDC错误响应。
+                    //授权确认设定拒绝授权
                     await _interaction.GrantConsentAsync(context, ConsentResponse.Denied);
 
-                    //我们可以信任模型。ReturnUrl因为GetAuthorizationContextAsync返回非空
+                    //跳转回返回地址
                     return Redirect(model.ReturnUrl);
                 }
                 else
                 {
-                    //由于我们没有有效的上下文，所以我们只能返回到主页
+                    //如果没有返回地址,就返回IS4首页
                     return Redirect("~/");
                 }
             }
-
+            //模型通过验证
             if (ModelState.IsValid)
             {
+                //通过用户名查找用户
                 var user = await _userManager.FindByNameAsync(model.Username);
 
-
+                //用户是否被删除
                 if (!user.IsDelete)
                 {
                     var result = await _signInManager.PasswordSignInAsync(model.Username, model.Password, model.RememberLogin, lockoutOnFailure: true);
@@ -130,7 +129,11 @@ namespace IS4.IdentityServer.Controllers
             return View(vm);
         }
 
-
+        /// <summary>
+        /// 处理windows登陆
+        /// </summary>
+        /// <param name="returnUrl">返回地址</param>
+        /// <returns></returns>
         private async Task<IActionResult> ProcessWindowsLoginAsync(string returnUrl)
         {
             //查看是否已经请求windows验证并成功
@@ -180,7 +183,7 @@ namespace IS4.IdentityServer.Controllers
 
 
         /// <summary>
-        /// 启动到外部身份验证提供者的往返
+        /// 外部登陆
         /// </summary>
         [HttpGet]
         public async Task<IActionResult> ExternalLogin(string provider, string returnUrl)
