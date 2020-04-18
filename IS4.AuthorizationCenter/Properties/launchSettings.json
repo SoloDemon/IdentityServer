@@ -18,7 +18,7 @@
     "IS4.AuthorizationCenter": {
       "commandName": "Project",
       "launchBrowser": true,
-      "applicationUrl": "http://localhost:80",
+      "applicationUrl": "http://10.0.5.234:80",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
