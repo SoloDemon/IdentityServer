@@ -7,7 +7,7 @@ namespace IS4.AuthorizationCenter.Models.Account
     {
         [Required]
         [Display(Name = "昵称")]
-        public string RealName { get; set; }
+        public string NickName { get; set; }
 
         [Required]
         [Display(Name = "登录名")]
