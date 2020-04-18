@@ -33,7 +33,7 @@ bld/
 #wwwroot/
 
 #Visual Studio appsetting.json
-appsetting.json
+appsettings.json
 appsettings.Development.json
 
 # Visual Studio 2017 auto generated files
