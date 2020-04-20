@@ -1,4 +1,6 @@
-﻿namespace IS4.AuthorizationCenter.Models.Account
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace IS4.AuthorizationCenter.Models.Account
 {
     public class RoleEditViewModel
     {

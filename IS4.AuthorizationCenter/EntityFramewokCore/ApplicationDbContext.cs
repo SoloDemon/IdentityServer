@@ -34,8 +34,8 @@ namespace IS4.AuthorizationCenter.EntityFramewokCore
             });
 
             // 就是这里，我们可以修改下表名等其他任意操作
-            builder.Entity<ApplicationRole>()
-                .ToTable("Role");
+            //builder.Entity<ApplicationRole>()
+            //    .ToTable("Role");
         }
     }
 }

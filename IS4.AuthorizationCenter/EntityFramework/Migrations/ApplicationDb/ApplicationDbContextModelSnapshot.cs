@@ -74,7 +74,7 @@ namespace IS4.AuthorizationCenter.EntityFramework.Migrations.ApplicationDb
                         .HasName("RoleNameIndex")
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
-                    b.ToTable("Role");
+                    b.ToTable("AspNetRoles");
                 });
 
             modelBuilder.Entity("IS4.AuthorizationCenter.Models.Entity.ApplicationUser", b =>

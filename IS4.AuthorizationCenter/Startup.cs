@@ -95,7 +95,7 @@ namespace IS4.AuthorizationCenter
 
             services.ConfigureApplicationCookie(options =>
             {
-                options.LoginPath = new PathString("/account/login");
+                options.LoginPath = new PathString("/OAuth2/Authorization");//登录地址  
                 options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
             });
 
@@ -109,7 +109,7 @@ namespace IS4.AuthorizationCenter
                 options.PublicOrigin = "https://authorize.hwyuan.com";
                 options.UserInteraction = new IdentityServer4.Configuration.UserInteractionOptions
                 {
-                    LoginUrl = "/account/login",//登录地址  
+                    LoginUrl = "/OAuth2/Authorization",//登录地址  
                 };
             })
                 //扩展授权验证器
