@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace IS4.AuthorizationCenter
 {
-    public static class Extensions
+    public static class IS4Extension
     {
         /// <summary>
         /// Determines whether the client is configured to use PKCE.

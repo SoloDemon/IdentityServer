@@ -394,58 +394,7 @@ namespace IS4.AuthorizationCenter.Controllers.Account
             return View();
         }
 
-        /// <summary>
-        /// 显示注销页
-        /// </summary>
-        [HttpGet]
-        public async Task<IActionResult> Logout(string logoutId)
-        {
-            // 构建一个模型，以便注销页面知道要显示什么
-            var vm = await BuildLogoutViewModelAsync(logoutId);
-
-            if (vm.ShowLogoutPrompt == false)
-            {
-                //如果从IdentityServer正确地验证了注销请求，则
-                //我们不需要显示提示，直接将用户登出即可。
-                return await Logout(vm);
-            }
-
-            return View(vm);
-        }
-
-        /// <summary>
-        /// 处理注销页面回发
-        /// </summary>
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Logout(LogoutInputModel model)
-        {
-            //建立一个模型，以便登出页面知道要显示什么
-            var vm = await BuildLoggedOutViewModelAsync(model.LogoutId);
-
-            if (User?.Identity.IsAuthenticated == true)
-            {
-                // 删除本地认证cookie
-                await HttpContext.SignOutAsync();
-
-                // 引发注销事件
-                await _events.RaiseAsync(new UserLogoutSuccessEvent(User.GetSubjectId(), User.GetDisplayName()));
-            }
-
-            // 检查我们是否需要在上游身份提供商处触发退出
-            if (vm.TriggerExternalSignout)
-            {
-                //建立一个返回URL，这样上游提供商将重定向回来
-                //在用户登出后发给我们。这让我们可以
-                //完成我们的单次签出处理。
-                string url = Url.Action("Logout", new { logoutId = vm.LogoutId });
-
-                // 这将触发重定向到外部提供程序进行注销
-                return SignOut(new AuthenticationProperties { RedirectUri = url }, vm.ExternalAuthenticationScheme);
-            }
-
-            return View("LoggedOut", vm);
-        }
+        
 
         [HttpGet]
         public IActionResult AccessDenied()
@@ -457,78 +406,6 @@ namespace IS4.AuthorizationCenter.Controllers.Account
         /*****************************************/
         /* helper APIs for the AccountController */
         /*****************************************/
-
-        
-
-      
-
-        /// <summary>
-        /// 建立登出展示模型
-        /// </summary>
-        /// <param name="logoutId"></param>
-        /// <returns></returns>
-        private async Task<LogoutViewModel> BuildLogoutViewModelAsync(string logoutId)
-        {
-            var vm = new LogoutViewModel { LogoutId = logoutId, ShowLogoutPrompt = _accountOptions.ShowLogoutPrompt };
-
-            if (User?.Identity.IsAuthenticated != true)
-            {
-                //如果用户没有通过身份验证，那么只显示登出页面
-                vm.ShowLogoutPrompt = false;
-                return vm;
-            }
-
-            var context = await _interaction.GetLogoutContextAsync(logoutId);
-            if (context?.ShowSignoutPrompt == false)
-            {
-                //自动退出是安全的
-                vm.ShowLogoutPrompt = false;
-                return vm;
-            }
-
-            //显示注销提示。这可以防止用户受到攻击
-            //被另一个恶意网页自动注销。
-            return vm;
-        }
-
-        private async Task<LoggedOutViewModel> BuildLoggedOutViewModelAsync(string logoutId)
-        {
-            // 获取上下文信息(客户端名称、退出后重定向URI和联邦签名的iframe)
-            var logout = await _interaction.GetLogoutContextAsync(logoutId);
-
-            var vm = new LoggedOutViewModel
-            {
-                AutomaticRedirectAfterSignOut = _accountOptions.AutomaticRedirectAfterSignOut,
-                PostLogoutRedirectUri = logout?.PostLogoutRedirectUri,
-                ClientName = string.IsNullOrEmpty(logout?.ClientName) ? logout?.ClientId : logout?.ClientName,
-                SignOutIframeUrl = logout?.SignOutIFrameUrl,
-                LogoutId = logoutId
-            };
-
-            if (User?.Identity.IsAuthenticated == true)
-            {
-                var idp = User.FindFirst(JwtClaimTypes.IdentityProvider)?.Value;
-                if (idp != null && idp != IdentityServerConstants.LocalIdentityProvider)
-                {
-                    var providerSupportsSignout = await HttpContext.GetSchemeSupportsSignOutAsync(idp);
-                    if (providerSupportsSignout)
-                    {
-                        if (vm.LogoutId == null)
-                        {
-                            //如果当前没有注销上下文，我们需要创建一个
-                            //从当前登录用户获取必要的信息
-                            //在我们注销并重定向到外部IdP进行注销之前
-                            vm.LogoutId = await _interaction.CreateLogoutContextAsync();
-                        }
-
-                        vm.ExternalAuthenticationScheme = idp;
-                    }
-                }
-            }
-
-            return vm;
-        }
-
 
 
         /// <summary>

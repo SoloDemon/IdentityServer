@@ -33,6 +33,8 @@ namespace IS4.AuthorizationCenter
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSameSiteCookiePolicy();
+
             services.AddControllersWithViews();
             /*
              * 手动创建数据库迁移命令
@@ -110,6 +112,7 @@ namespace IS4.AuthorizationCenter
                 options.UserInteraction = new IdentityServer4.Configuration.UserInteractionOptions
                 {
                     LoginUrl = "/OAuth2/Authorization",//登录地址  
+                    LogoutUrl = "/Oauth2/Logout" //退出登陆地址
                 };
             })
                 //扩展授权验证器
@@ -138,16 +141,16 @@ namespace IS4.AuthorizationCenter
                 .AddAspNetIdentity<ApplicationUser>();
 
             //开发环境使用开发证书,正式环境使用正式证书
-            if (env.IsDevelopment())
-            {
-                builder.AddDeveloperSigningCredential();
-            }
-            else
-            {
+            //if (env.IsDevelopment())
+            //{
+            //    builder.AddDeveloperSigningCredential();
+            //}
+            //else
+            //{
                 builder.AddSigningCredential(new X509Certificate2(
                     Path.Combine(Directory.GetCurrentDirectory(), Configuration["Certificates:Path"]),
                     Configuration["Certificates:Password"]));
-            }
+            //}
 
             services.AddAuthentication()
             //TODO:这里可以扩展更多第三方外部登陆
@@ -158,7 +161,8 @@ namespace IS4.AuthorizationCenter
                     options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
                     options.SaveTokens = true;
                 })
-                .AddWeixin(options => {
+                .AddWeixin(options =>
+                {
                     options.ClientId = Configuration["OpenPlatform:WeiXin:AppId"];
                     options.ClientSecret = Configuration["OpenPlatform:WeiXin:AppKey"];
                     options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
@@ -175,6 +179,7 @@ namespace IS4.AuthorizationCenter
         public void Configure(IApplicationBuilder app)
         {
 
+            app.UseCookiePolicy();
             //初始化数据库,如果需要初始化数据库,请在启动的时候加入参数 --InitDB=true.
             if (Configuration["InitDB"] == "true")
             {
@@ -200,7 +205,7 @@ namespace IS4.AuthorizationCenter
             {
                 endpoints.MapControllerRoute(
                     name: "default",
-                    pattern: "{controller=Account}/{action=Login}/{id?}");
+                    pattern: "{controller=OAuth2}/{action=Authorization}");
             });
         }
     }

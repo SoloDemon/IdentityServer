@@ -315,7 +315,9 @@ namespace IS4.AuthorizationCenter
             {
                 Id = Guid.NewGuid(),
                 UserName = Guid.NewGuid().ToString(),
-                Portrait = portrait
+                Portrait = portrait,
+                NickName = claims.FirstOrDefault(x => x.Type == JwtClaimTypes.Name)?.Value ??
+                claims.FirstOrDefault(x => x.Type == ClaimTypes.Name)?.Value
             };
         }
 
