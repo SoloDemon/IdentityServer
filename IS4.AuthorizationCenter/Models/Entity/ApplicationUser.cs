@@ -52,6 +52,7 @@ namespace IS4.AuthorizationCenter.Models.Entity
         /// <summary>
         /// 头像
         /// </summary>
+        [MaxLength(300)]
         public string Portrait { get; set; }
 
         /// <summary>
