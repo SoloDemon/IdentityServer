@@ -61,6 +61,12 @@ namespace IS4.AuthorizationCenter.Models.Entity
         public string NickName { get; set; }
 
         /// <summary>
+        /// 微信开放id
+        /// </summary>
+        [MaxLength(100)]
+        public string WeChatOpenId { get; set; }
+
+        /// <summary>
         /// 是否删除
         /// </summary>
         public bool IsDelete { get; set; }
