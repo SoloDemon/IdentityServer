@@ -16,6 +16,7 @@ using System;
 using System.IO;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
+using IS4.AuthorizationCenter.Extensions.Security;
 
 namespace IS4.AuthorizationCenter
 {
@@ -94,6 +95,7 @@ namespace IS4.AuthorizationCenter
 
             //注入容器
             services.AddTransient<IEmailSender, EmailSender>();
+            services.AddSingleton<AesSecurity>();
 
             services.ConfigureApplicationCookie(options =>
             {
@@ -116,7 +118,7 @@ namespace IS4.AuthorizationCenter
                 };
             })
                 //扩展授权验证器
-                //.AddExtensionGrantValidator<WeiXinOpenGrantValidator>()
+                .AddExtensionGrantValidator<WeChatGrantValidator>()
 
                 //注册配置数据<客户端和资源>
                 .AddConfigurationStore(options =>
@@ -153,26 +155,28 @@ namespace IS4.AuthorizationCenter
             //}
 
             services.AddAuthentication()
-            //TODO:这里可以扩展更多第三方外部登陆
+                //TODO:这里可以扩展更多第三方外部登陆
                 .AddQQ(options =>
                 {
                     options.ClientId = Configuration["OpenPlatform:QQ:AppId"];
                     options.ClientSecret = Configuration["OpenPlatform:QQ:AppKey"];
                     options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
                     options.SaveTokens = true;
-                })
-                .AddWeixin(options =>
-                {
-                    options.ClientId = Configuration["OpenPlatform:WeiXin:AppId"];
-                    options.ClientSecret = Configuration["OpenPlatform:WeiXin:AppKey"];
-                    options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
-                    options.SaveTokens = true;
                 });
+                //.AddWeixin(options =>
+                //{
+                //    options.ClientId = Configuration["OpenPlatform:WeiXin:AppId"];
+                //    options.ClientSecret = Configuration["OpenPlatform:WeiXin:AppKey"];
+                //    options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
+                //    options.SaveTokens = true;
+                //});
 
 
             //注册全局配置信息
             services.Configure<AccountOptions>(Configuration.GetSection("AccountOptions"));
             services.Configure<ConsentOptions>(Configuration.GetSection("ConsentOptions"));
+            //注入加密选项
+            services.Configure<SecurityOption>(Configuration.GetSection("Security"));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

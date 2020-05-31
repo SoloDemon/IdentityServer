@@ -66,6 +66,12 @@ namespace IS4.AuthorizationCenter.Models.Entity
         public bool IsDelete { get; set; }
 
         /// <summary>
+        /// 微信开放id
+        /// </summary>
+        [MaxLength(100)]
+        public string WeChatOpenId { get; set; }
+
+        /// <summary>
         /// 角色用户关系表
         /// </summary>
         public ICollection<ApplicationUserRole> UserRoles { get; set; }
