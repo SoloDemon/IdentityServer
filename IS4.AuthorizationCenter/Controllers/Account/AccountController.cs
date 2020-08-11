@@ -3,29 +3,22 @@
 
 
 using IdentityModel;
-using IdentityServer4;
-using IdentityServer4.Events;
-using IdentityServer4.Extensions;
-using IdentityServer4.Models;
 using IdentityServer4.Services;
 using IdentityServer4.Stores;
-using IS4.AuthorizationCenter.Controllers.Authorizations;
 using IS4.AuthorizationCenter.Models.Account;
 using IS4.AuthorizationCenter.Models.Entity;
 using IS4.AuthorizationCenter.Models.Options;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
-namespace IS4.AuthorizationCenter.Controllers.Account
+namespace IS4.AuthorizationCenter
 {
     /// <summary>
     ///这个控制器为本地和外部帐户实现了一个典型的登录/注销/注册。

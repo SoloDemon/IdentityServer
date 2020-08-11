@@ -25,7 +25,7 @@ namespace IS4.AuthorizationCenter.Extensions.GrantValidator
             try
             {
                 var openId = _aesSecurity.AesDecrypt(context.Request.Raw["openid"]);
-                var user = await _userManager.Users.Where(x => x.WeChatOpenId == _aesSecurity.AesDecrypt(openId)).FirstOrDefaultAsync();
+                var user = await _userManager.Users.Where(x => x.WeChatOpenId == openId).FirstOrDefaultAsync();
                 if (user != null)
                 {
                     //授权通过返回

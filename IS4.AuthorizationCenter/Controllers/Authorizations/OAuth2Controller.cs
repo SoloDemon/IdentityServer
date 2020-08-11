@@ -16,7 +16,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
-namespace IS4.AuthorizationCenter.Controllers.Authorizations
+namespace IS4.AuthorizationCenter
 {
     public class OAuth2Controller : Controller
     {
@@ -86,7 +86,8 @@ namespace IS4.AuthorizationCenter.Controllers.Authorizations
                     //如果用户取消，将结果发送回IdentityServer
                     //拒绝同意(即使这个客户不需要同意)。
                     //这将向客户端发送一个拒绝访问的OIDC错误响应。
-                    await _interaction.GrantConsentAsync(context, ConsentResponse.Denied);
+                    //await _interaction.GrantConsentAsync(context, ConsentResponse.Denied);
+                    await _interaction.DenyAuthorizationAsync(context, AuthorizationError.AccessDenied);
 
                     //我们可以信任模型。ReturnUrl因为GetAuthorizationContextAsync返回非空
                     return Redirect(model.ReturnUrl);
@@ -174,9 +175,9 @@ namespace IS4.AuthorizationCenter.Controllers.Authorizations
                 }).ToList();
 
             var allowLocal = true;
-            if (context?.ClientId != null)
+            if (context?.Client?.ClientId != null)
             {
-                var client = await _clientStore.FindEnabledClientByIdAsync(context.ClientId);
+                var client = await _clientStore.FindEnabledClientByIdAsync(context.Client.ClientId);
                 if (client != null)
                 {
                     allowLocal = client.EnableLocalLogin;

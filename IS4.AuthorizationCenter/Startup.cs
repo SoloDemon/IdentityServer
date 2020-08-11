@@ -17,6 +17,7 @@ using System.IO;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using IS4.AuthorizationCenter.Extensions.Security;
+using IS4.AuthorizationCenter.Extensions.GrantValidator;
 
 namespace IS4.AuthorizationCenter
 {
@@ -110,7 +111,7 @@ namespace IS4.AuthorizationCenter
                 options.Events.RaiseFailureEvents = true;
                 options.Events.RaiseSuccessEvents = true;
                 options.IssuerUri = "https://authorize.hwyuan.com";
-                options.PublicOrigin = "https://authorize.hwyuan.com";
+                //options.PublicOrigin = "https://authorize.hwyuan.com";
                 options.UserInteraction = new IdentityServer4.Configuration.UserInteractionOptions
                 {
                     LoginUrl = "/OAuth2/Authorization",//µÇÂ¼µØÖ·  

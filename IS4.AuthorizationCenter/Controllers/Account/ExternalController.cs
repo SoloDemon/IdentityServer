@@ -17,6 +17,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Security.Principal;
 using System.Threading.Tasks;
+using IdentityServer4;
 
 namespace IS4.AuthorizationCenter
 {
@@ -120,9 +121,15 @@ namespace IS4.AuthorizationCenter
             ProcessLoginCallbackForWsFed(result, additionalLocalClaims, localSignInProps);
             ProcessLoginCallbackForSaml2p(result, additionalLocalClaims, localSignInProps);
 
-            // 为用户发布认证cookie
             await _events.RaiseAsync(new UserLoginSuccessEvent(provider, providerUserId, user.Id.ToString(), user.UserName));
-            await HttpContext.SignInAsync(user.Id.ToString(), user.UserName, provider, localSignInProps, additionalLocalClaims.ToArray());
+            // issue authentication cookie for user
+            var isuser = new IdentityServerUser(user.Id.ToString())
+            {
+                DisplayName = user.UserName,
+                IdentityProvider = provider,
+                AdditionalClaims = additionalLocalClaims
+            };
+            await HttpContext.SignInAsync(isuser, localSignInProps);
 
             // 删除外部身份验证期间使用的临时cookie
             await HttpContext.SignOutAsync(IdentityServer4.IdentityServerConstants.ExternalCookieAuthenticationScheme);
