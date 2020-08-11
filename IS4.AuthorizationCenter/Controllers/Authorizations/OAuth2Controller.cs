@@ -61,6 +61,9 @@ namespace IS4.AuthorizationCenter
         {
             // 创建登陆页面使用的数据模型
             LoginViewModel vm = await BuildLoginViewModelAsync(returnUrl);
+            //var a = new Secret("Secret.js".Sha256());
+            //var b = new Secret("Secret".Sha256());
+            //var c = new Secret("secret".Sha256());
             //如果是外部登陆
             if (vm.IsExternalLoginOnly)
             {

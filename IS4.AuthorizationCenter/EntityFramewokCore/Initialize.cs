@@ -19,7 +19,7 @@ namespace IS4.AuthorizationCenter.EntityFramewokCore
             //获取服务
             using var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope();
             //配置Identity数据库ApplicationDbContext迁移,如果不存在就迁移数据库,这样就不用手动执行数据库迁移命令
-            serviceScope.ServiceProvider.GetRequiredService<ApplicationDbContext>().Database.Migrate();
+            //serviceScope.ServiceProvider.GetRequiredService<ApplicationDbContext>().Database.Migrate();
             //配置PersistedGrantDbContext迁移,如果不存在就迁移数据库,这样就不用手动执行数据库迁移命令
             serviceScope.ServiceProvider.GetRequiredService<PersistedGrantDbContext>().Database.Migrate();
             //配置ConfigurationDbContext迁移,如果不存在就迁移数据库,这样就不用手动执行数据库迁移命令

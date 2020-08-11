@@ -59,7 +59,8 @@ namespace IS4.AuthorizationCenter.EntityFramework.Migrations.ApplicationDb
                     Country = table.Column<string>(maxLength: 20, nullable: true),
                     Portrait = table.Column<string>(nullable: true),
                     NickName = table.Column<string>(maxLength: 20, nullable: true),
-                    IsDelete = table.Column<bool>(nullable: false)
+                    IsDelete = table.Column<bool>(nullable: false),
+                    WeChatOpenId = table.Column<string>(maxLength: 100, nullable: true)
                 },
                 constraints: table =>
                 {

@@ -2,6 +2,7 @@
 using IdentityServer4;
 using IdentityServer4.Models;
 using System.Collections.Generic;
+using IS4.AuthorizationCenter.Extensions.GrantValidator;
 
 namespace IS4.AuthorizationCenter
 {
@@ -94,6 +95,35 @@ namespace IS4.AuthorizationCenter
                     ClientName = "授权码模式",
                     ClientSecrets = {new Secret("secret".Sha256())},
                     AllowedGrantTypes = GrantTypes.Code,   //授权码模式
+                    RequireConsent = false,//隐藏同意授权页面
+                    RequirePkce = true,
+                    
+                    // 登陆后跳转地址
+                    RedirectUris = { "http://localhost:5001/signin-oidc" },
+
+                    // 登出后跳转地址
+                    PostLogoutRedirectUris = { "http://localhost:5001/signout-callback-oidc" },
+
+                    AllowedScopes = new List<string>
+                    {
+                        IdentityServerConstants.StandardScopes.OpenId,
+                        IdentityServerConstants.StandardScopes.Profile,
+                        "Client.Api",
+                        "roles"
+                    },
+                    AllowOfflineAccess = true
+                },
+                new Client
+                {
+                    ClientId = "SUCM",
+                    ClientName = "校服收费管理系统",
+                    ClientSecrets = {new Secret("Sucm".Sha256())},
+                    //授权模式
+                    AllowedGrantTypes = new List<string>
+                    {
+                        GrantTypeCustom.ResourceWeChat,
+                        GrantType.Implicit
+                    }, 
                     RequireConsent = false,//隐藏同意授权页面
                     RequirePkce = true,
                     

@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace IS4.AuthorizationCenter
 {
     /// <summary>
-    /// This sample controller allows a user to revoke grants given to clients
+    /// 这个示例控制器允许用户撤销给客户机的授予
     /// </summary>
     [SecurityHeaders]
     [Authorize]
