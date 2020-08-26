@@ -77,6 +77,20 @@ namespace IS4.AuthorizationCenter.EntityFramewokCore
             {
                 Console.WriteLine("Api资源数据已存在");
             }
+
+            if (!context.ApiScopes.Any())
+            {
+                Console.WriteLine("开始初始化ApiScopes数据");
+                foreach (var apiScope in Config.GetApiScopes.ToList())
+                {
+                    context.ApiScopes.Add(apiScope.ToEntity());
+                }
+                context.SaveChanges();
+            }
+            else
+            {
+                Console.WriteLine("客户端数据已存在");
+            }
         }
     }
 }

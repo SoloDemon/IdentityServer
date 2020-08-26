@@ -20,8 +20,18 @@ namespace IS4.AuthorizationCenter
             {
                 new ApiResource("Client.Api", "客户端api")
                 {
-                    UserClaims = {JwtClaimTypes.Name,JwtClaimTypes.Role}
-                }
+                    UserClaims = {JwtClaimTypes.Name,JwtClaimTypes.Role},
+                    Scopes = { "Client.Api" },
+                    ApiSecrets = new List<Secret>
+                    {
+                        new Secret("Client.Api.Secret".Sha256())
+                    }
+                },
+            };
+
+        public static IEnumerable<ApiScope> GetApiScopes =>
+             new ApiScope[] {
+                new ApiScope("Client.Api")
             };
 
         public static IEnumerable<Client> GetClients =>
@@ -36,7 +46,7 @@ namespace IS4.AuthorizationCenter
                         new Secret("Secret".Sha256())
                     },
                     AllowedGrantTypes = GrantTypes.ResourceOwnerPassword, //使用资源所有者密码和客户端证书模式获取token
-                    AllowedCorsOrigins = {"http://localhost:5001"},
+                    AllowedCorsOrigins = {"http://localhost:33221"},
                     AllowedScopes = new List<string> //允许的访问范围
                     {
                         IdentityServerConstants.StandardScopes.OpenId,
@@ -80,7 +90,7 @@ namespace IS4.AuthorizationCenter
                     ClientName = "客户端证书模式",
                     ClientSecrets = {new Secret("secret".Sha256())},
                     AllowedGrantTypes=GrantTypes.ClientCredentials,
-                    AllowedCorsOrigins = {"http://localhost:5001"},
+                    AllowedCorsOrigins = {"http://localhost:33221"},
                     AllowedScopes = new List<string> //允许的访问范围
                     {
                         IdentityServerConstants.StandardScopes.OpenId,
@@ -99,10 +109,10 @@ namespace IS4.AuthorizationCenter
                     RequirePkce = true,
                     
                     // 登陆后跳转地址
-                    RedirectUris = { "http://localhost:5001/signin-oidc" },
+                    RedirectUris = { "http://localhost:33221/signin-oidc" },
 
                     // 登出后跳转地址
-                    PostLogoutRedirectUris = { "http://localhost:5001/signout-callback-oidc" },
+                    PostLogoutRedirectUris = { "http://localhost:33221/signout-callback-oidc" },
 
                     AllowedScopes = new List<string>
                     {
@@ -123,15 +133,15 @@ namespace IS4.AuthorizationCenter
                     {
                         GrantTypeCustom.ResourceWeChat,
                         GrantType.Implicit
-                    }, 
+                    },
                     RequireConsent = false,//隐藏同意授权页面
                     RequirePkce = true,
                     
                     // 登陆后跳转地址
-                    RedirectUris = { "http://localhost:5001/signin-oidc" },
+                    RedirectUris = { "http://localhost:33221/signin-oidc" },
 
                     // 登出后跳转地址
-                    PostLogoutRedirectUris = { "http://localhost:5001/signout-callback-oidc" },
+                    PostLogoutRedirectUris = { "http://localhost:33221/signout-callback-oidc" },
 
                     AllowedScopes = new List<string>
                     {
