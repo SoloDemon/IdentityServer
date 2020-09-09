@@ -18,6 +18,7 @@ using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
 using IS4.AuthorizationCenter.Extensions.Security;
 using IS4.AuthorizationCenter.Extensions.GrantValidator;
+using IS4.AuthorizationCenter.Extensions.IdentityServer;
 
 namespace IS4.AuthorizationCenter
 {
@@ -141,7 +142,8 @@ namespace IS4.AuthorizationCenter
                 })
 
 
-                .AddAspNetIdentity<ApplicationUser>();
+                .AddAspNetIdentity<ApplicationUser>()
+                .AddProfileService<CustomProfileService>();
 
             //开发环境使用开发证书,正式环境使用正式证书
             //if (env.IsDevelopment())

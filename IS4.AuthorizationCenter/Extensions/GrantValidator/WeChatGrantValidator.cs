@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using IdentityServer4.Validation;
 using IS4.AuthorizationCenter.Extensions.Security;
@@ -24,15 +26,19 @@ namespace IS4.AuthorizationCenter.Extensions.GrantValidator
         {
             try
             {
-                var openId = _aesSecurity.AesDecrypt(context.Request.Raw["openid"]);
-                var user = await _userManager.Users.Where(x => x.WeChatOpenId == openId).FirstOrDefaultAsync();
+                var openId = context.Request.Raw["openid"];
+                var user = await _userManager.Users.Where(x => x.WeChatOpenId == _aesSecurity.AesDecrypt(openId)).FirstOrDefaultAsync();
                 if (user != null)
                 {
                     //授权通过返回
                     context.Result = new GrantValidationResult
                     (
                         subject: user.Id.ToString(),
-                        authenticationMethod: "WeChat"
+                        authenticationMethod: GrantType,
+                        new List<Claim>
+                        {
+                            new Claim("WeChatOpenId",$"{openId}")
+                        }
                     );
                 }
                 else
@@ -52,7 +58,7 @@ namespace IS4.AuthorizationCenter.Extensions.GrantValidator
                     Error = e.Message
                 };
             }
-            
+
         }
 
         public string GrantType => GrantTypeCustom.ResourceWeChat;

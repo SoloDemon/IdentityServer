@@ -8,19 +8,25 @@ namespace IS4.AuthorizationCenter
 {
     public static class Config
     {
+        /// <summary>
+        /// 获取身份资源
+        /// </summary>
         public static IEnumerable<IdentityResource> GetIdentityResources => new List<IdentityResource>
         {
             new IdentityResources.OpenId(),
             new IdentityResources.Profile(),
-            new IdentityResource("roles","用户角色",new List<string>{JwtClaimTypes.Role})
+            new IdentityResource("roles","用户角色",new List<string>{JwtClaimTypes.Role,"WeChatOpenId"})
         };
 
+        /// <summary>
+        /// 获取api资源
+        /// </summary>
         public static IEnumerable<ApiResource> GetApiResources =>
             new List<ApiResource>
             {
                 new ApiResource("Client.Api", "客户端api")
                 {
-                    UserClaims = {JwtClaimTypes.Name,JwtClaimTypes.Role},
+                    UserClaims = {JwtClaimTypes.Name,JwtClaimTypes.Role,"WeChatOpenId"},
                     Scopes = { "Client.Api" },
                     ApiSecrets = new List<Secret>
                     {
@@ -29,11 +35,17 @@ namespace IS4.AuthorizationCenter
                 },
             };
 
+        /// <summary>
+        /// 获取Api区域
+        /// </summary>
         public static IEnumerable<ApiScope> GetApiScopes =>
              new ApiScope[] {
                 new ApiScope("Client.Api")
             };
 
+        /// <summary>
+        /// 获取客户端
+        /// </summary>
         public static IEnumerable<Client> GetClients =>
             new List<Client>
             {
@@ -127,7 +139,7 @@ namespace IS4.AuthorizationCenter
                 {
                     ClientId = "SUCM",
                     ClientName = "校服收费管理系统",
-                    ClientSecrets = {new Secret("Sucm".Sha256())},
+                    ClientSecrets = {new Secret("Sucm.Api.Secret".Sha256())},
                     //授权模式
                     AllowedGrantTypes = new List<string>
                     {
@@ -148,7 +160,8 @@ namespace IS4.AuthorizationCenter
                         IdentityServerConstants.StandardScopes.OpenId,
                         IdentityServerConstants.StandardScopes.Profile,
                         "Client.Api",
-                        "roles"
+                        "roles",
+                        "WeChatOpenId"
                     },
                     AllowOfflineAccess = true
                 }
