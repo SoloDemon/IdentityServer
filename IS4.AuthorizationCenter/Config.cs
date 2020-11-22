@@ -147,6 +147,9 @@ namespace IS4.AuthorizationCenter
                         GrantType.Implicit
                     },
                     RequireConsent = false,//隐藏同意授权页面
+                    AllowAccessTokensViaBrowser = true, //允许浏览器获取token
+                    AllowOfflineAccess = true, //允许刷新token
+                    AccessTokenLifetime = 60 * 60, //token过期时间1小时
                     RequirePkce = true,
                     
                     // 登陆后跳转地址

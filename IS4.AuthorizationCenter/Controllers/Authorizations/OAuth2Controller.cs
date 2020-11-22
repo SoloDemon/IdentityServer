@@ -107,24 +107,26 @@ namespace IS4.AuthorizationCenter
             {
                 //通过用户名查找用户
                 var user = await _userManager.FindByNameAsync(model.Username);
-
-                if (!user.IsDelete)
+                if (user != null)
                 {
-                    //通过密码登录
-                    var result = await _signInManager.PasswordSignInAsync(model.Username, model.Password, model.RememberLogin, lockoutOnFailure: true);
-                    if (result.Succeeded)
+                    if (!user.IsDelete)
                     {
-                        //创建登录成功事件
-                        await _events.RaiseAsync(new UserLoginSuccessEvent(user.UserName, user.Id.ToString(), user.UserName));
-
-                        //确保returnUrl仍然有效，如果是，则重定向回authorize endpoint或本地页面
-                        // IsLocalUrl检查是必要的，如果你想支持额外的本地页面，否则IsValidReturnUrl是更严格的
-                        if (_interaction.IsValidReturnUrl(model.ReturnUrl) || Url.IsLocalUrl(model.ReturnUrl))
+                        //通过密码登录
+                        var result = await _signInManager.PasswordSignInAsync(model.Username, model.Password, model.RememberLogin, lockoutOnFailure: true);
+                        if (result.Succeeded)
                         {
-                            return Redirect(model.ReturnUrl);
-                        }
+                            //创建登录成功事件
+                            await _events.RaiseAsync(new UserLoginSuccessEvent(user.UserName, user.Id.ToString(), user.UserName));
 
-                        return Redirect("~/");
+                            //确保returnUrl仍然有效，如果是，则重定向回authorize endpoint或本地页面
+                            // IsLocalUrl检查是必要的，如果你想支持额外的本地页面，否则IsValidReturnUrl是更严格的
+                            if (_interaction.IsValidReturnUrl(model.ReturnUrl) || Url.IsLocalUrl(model.ReturnUrl))
+                            {
+                                return Redirect(model.ReturnUrl);
+                            }
+
+                            return Redirect("~/");
+                        }
                     }
                 }
 

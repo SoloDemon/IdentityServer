@@ -16,9 +16,11 @@ using System;
 using System.IO;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
+using IdentityServer4.Services;
 using IS4.AuthorizationCenter.Extensions.Security;
 using IS4.AuthorizationCenter.Extensions.GrantValidator;
 using IS4.AuthorizationCenter.Extensions.IdentityServer;
+using Microsoft.Extensions.Logging;
 
 namespace IS4.AuthorizationCenter
 {
@@ -152,9 +154,9 @@ namespace IS4.AuthorizationCenter
             //}
             //else
             //{
-                builder.AddSigningCredential(new X509Certificate2(
-                    Path.Combine(Directory.GetCurrentDirectory(), Configuration["Certificates:Path"]),
-                    Configuration["Certificates:Password"]));
+            builder.AddSigningCredential(new X509Certificate2(
+                Path.Combine(Directory.GetCurrentDirectory(), Configuration["Certificates:Path"]),
+                Configuration["Certificates:Password"]));
             //}
 
             services.AddAuthentication()
@@ -166,13 +168,13 @@ namespace IS4.AuthorizationCenter
                     options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
                     options.SaveTokens = true;
                 });
-                //.AddWeixin(options =>
-                //{
-                //    options.ClientId = Configuration["OpenPlatform:WeiXin:AppId"];
-                //    options.ClientSecret = Configuration["OpenPlatform:WeiXin:AppKey"];
-                //    options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
-                //    options.SaveTokens = true;
-                //});
+            //.AddWeixin(options =>
+            //{
+            //    options.ClientId = Configuration["OpenPlatform:WeiXin:AppId"];
+            //    options.ClientSecret = Configuration["OpenPlatform:WeiXin:AppKey"];
+            //    options.SignInScheme = IdentityServerConstants.ExternalCookieAuthenticationScheme;
+            //    options.SaveTokens = true;
+            //});
 
 
             //注册全局配置信息
@@ -180,6 +182,17 @@ namespace IS4.AuthorizationCenter
             services.Configure<ConsentOptions>(Configuration.GetSection("ConsentOptions"));
             //注入加密选项
             services.Configure<SecurityOption>(Configuration.GetSection("Security"));
+
+            //添加跨域请求
+            services.AddCors(options =>
+            {
+                options.AddPolicy("any", x =>
+                {
+                    x.AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .AllowAnyOrigin(); //允许任意来源
+                });
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -207,6 +220,7 @@ namespace IS4.AuthorizationCenter
             app.UseIdentityServer();
 
             app.UseAuthorization();
+            app.UseCors("any");
 
             app.UseEndpoints(endpoints =>
             {
