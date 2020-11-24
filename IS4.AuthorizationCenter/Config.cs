@@ -166,7 +166,6 @@ namespace IS4.AuthorizationCenter
                         "roles",
                         "WeChatOpenId"
                     },
-                    AllowOfflineAccess = true
                 }
             };
     }

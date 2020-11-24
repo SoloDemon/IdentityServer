@@ -10,7 +10,8 @@ namespace IS4.AuthorizationCenter
         {
             services.Configure<CookiePolicyOptions>(options =>
             {
-                options.MinimumSameSitePolicy = SameSiteMode.Unspecified;
+                //从Unspecified改为Lax,Unspecified报警告The cookie 'idsrv.session' has set 'SameSite=None' and must also set 'Secure
+                options.MinimumSameSitePolicy = SameSiteMode.Lax; 
                 options.OnAppendCookie = cookieContext =>
                     CheckSameSite(cookieContext.Context, cookieContext.CookieOptions);
                 options.OnDeleteCookie = cookieContext =>
