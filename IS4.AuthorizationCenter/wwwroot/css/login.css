@@ -1,6 +1,4 @@
 ﻿
-@import url('https://fonts.googleapis.com/css?family=Montserrat:400,800');
-
 * {
     box-sizing: border-box;
 }
@@ -13,7 +11,7 @@ body {
     flex-direction: column;
     font-family: 'Montserrat', sans-serif;
     height: 100vh;
-    margin: -20px 0 50px;
+    margin: 0;
 }
 
 h1 {
@@ -94,7 +92,7 @@ input {
     border-radius: 10px;
     box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
     position: relative;
-    overflow: hidden;
+    overflow: auto;
     width: 768px;
     max-width: 100%;
     min-height: 480px;
@@ -113,7 +111,7 @@ input {
     z-index: 2;
 }
 
-.container.right-panel-active .sign-in-container {
+.right-panel-active .sign-in-container {
     transform: translateX(100%);
 }
 
@@ -124,7 +122,7 @@ input {
     z-index: 1;
 }
 
-.container.right-panel-active .sign-up-container {
+.right-panel-active .sign-up-container {
     transform: translateX(100%);
     opacity: 1;
     z-index: 5;
@@ -154,7 +152,7 @@ input {
     z-index: 100;
 }
 
-.container.right-panel-active .overlay-container {
+.right-panel-active .overlay-container {
     transform: translateX(-100%);
 }
 
@@ -174,7 +172,7 @@ input {
     transition: transform 0.6s ease-in-out;
 }
 
-.container.right-panel-active .overlay {
+.right-panel-active .overlay {
     transform: translateX(50%);
 }
 
@@ -197,7 +195,7 @@ input {
     transform: translateX(-20%);
 }
 
-.container.right-panel-active .overlay-left {
+.right-panel-active .overlay-left {
     transform: translateX(0);
 }
 
@@ -206,7 +204,7 @@ input {
     transform: translateX(0);
 }
 
-.container.right-panel-active .overlay-right {
+.right-panel-active .overlay-right {
     transform: translateX(20%);
 }
 

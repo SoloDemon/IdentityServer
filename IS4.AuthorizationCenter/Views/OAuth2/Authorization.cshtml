@@ -2,7 +2,8 @@
 @section style{
     <link rel="stylesheet" href="~/css/login.css">
 }
-<div class="container" id="container">
+
+<div class="">
     <div class="form-container sign-in-container">
         <form asp-route="Login">
             <h1>登录</h1>
@@ -31,18 +32,20 @@
             <button type="submit" name="button" value="login">登录</button>
         </form>
     </div>
-    <div class="overlay-container">
-        <div class="overlay">
-            <div class="overlay-panel overlay-left">
-                <h1>欢迎回来！</h1>
-                <p>请您先登录的个人信息，进行操作。</p>
-                <button class="ghost" id="signIn">登录</button>
-            </div>
-            <div class="overlay-panel overlay-right">
-                <h1>你好朋友！</h1>
-                <p>输入您的个人信息注册成为会员。</p>
-                <button class="ghost" name="button" asp-controller="Account" asp-action="Register">注册</button>
+    <form>
+        <div class="overlay-container">
+            <div class="overlay">
+                <div class="overlay-panel overlay-left">
+                    <h1>欢迎回来！</h1>
+                    <p>请您先登录的个人信息，进行操作。</p>
+                    <button class="ghost"  asp-controller="OAuth2" asp-action="Authorization">登录</button>
+                </div>
+                <div class="overlay-panel overlay-right">
+                    <h1>你好朋友！</h1>
+                    <p>输入您的个人信息注册成为会员。</p>
+                    <button class="ghost" name="button" asp-controller="Account" asp-action="Register">注册</button>
+                </div>
             </div>
         </div>
-    </div>
+    </form>
 </div>

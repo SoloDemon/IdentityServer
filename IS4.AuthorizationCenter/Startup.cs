@@ -40,7 +40,8 @@ namespace IS4.AuthorizationCenter
         {
             services.AddSameSiteCookiePolicy();
 
-            services.AddControllersWithViews();
+            services.AddControllersWithViews()
+                .AddRazorRuntimeCompilation();
             /*
              * 手动创建数据库迁移命令
              * 1、add-migration InitialPersistedGrantDb -c PersistedGrantDbContext -OutputDir EntityFramework/Migrations/PersistedGrantDb 
