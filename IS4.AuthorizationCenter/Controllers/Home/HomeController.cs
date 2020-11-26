@@ -27,6 +27,11 @@ namespace IS4.AuthorizationCenter
             _logger = logger;
         }
 
+        public IActionResult Login()
+        {
+            return View();
+        }
+
         public IActionResult Index()
         {
             if (_environment.IsDevelopment())

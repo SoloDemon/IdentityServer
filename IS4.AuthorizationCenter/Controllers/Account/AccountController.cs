@@ -80,7 +80,7 @@ namespace IS4.AuthorizationCenter
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model, string returnUrl = null, string roleName = "User")
         {
-            ViewData["ReturnUrl"] = returnUrl;
+                ViewData["ReturnUrl"] = returnUrl;
             if (ModelState.IsValid)
             {
                 ApplicationUser user = await _userManager.FindByNameAsync(model.LoginName);

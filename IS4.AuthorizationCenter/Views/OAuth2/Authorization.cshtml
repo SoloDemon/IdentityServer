@@ -1,89 +1,48 @@
 ﻿@model LoginViewModel
-
-<div class="login-page">
-    <div class="page-header">
-        <h1>登陆</h1>
+@section style{
+    <link rel="stylesheet" href="~/css/login.css">
+}
+<div class="container" id="container">
+    <div class="form-container sign-in-container">
+        <form asp-route="Login">
+            <h1>登录</h1>
+            <div class="social-container">
+                @*<a href="#" class="social"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="social"><i class="fab fa-google-plus-g"></i></a>
+                    <a href="#" class="social"><i class="fab fa-linkedin-in"></i></a>*@
+                @if (Model.VisibleExternalProviders.Any())
+                {
+                    @foreach (var provider in Model.VisibleExternalProviders)
+                    {
+                        <a class="btn btn-default"
+                           asp-controller="External"
+                           asp-action="Challenge"
+                           asp-route-provider="@provider.AuthenticationScheme"
+                           asp-route-returnUrl="@Model.ReturnUrl">
+                            @provider.DisplayName
+                        </a>
+                    }
+                }
+            </div>
+            <span>第三方账号登录</span>
+            <input placeholder="用户名" asp-for="Username" autofocus>
+            <input type="password" placeholder="密码" asp-for="Password" autocomplete="off">
+            @*<a href="#">忘记密码？</a>*@
+            <button type="submit" name="button" value="login">登录</button>
+        </form>
     </div>
-
-    <partial name="_ValidationSummary" />
-
-    <div class="row">
-
-        @if (Model.EnableLocalLogin)
-        {
-            <div class="col-sm-6">
-                <div class="panel panel-default">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">Local Login</h3>
-                    </div>
-                    <div class="panel-body">
-
-                        <form asp-route="Login">
-                            <input type="hidden" asp-for="ReturnUrl" />
-
-                            <fieldset>
-                                <div class="form-group">
-                                    <label asp-for="Username"></label>
-                                    <input class="form-control" placeholder="Username" asp-for="Username" autofocus>
-                                </div>
-                                <div class="form-group">
-                                    <label asp-for="Password"></label>
-                                    <input type="password" class="form-control" placeholder="Password" asp-for="Password" autocomplete="off">
-                                </div>
-                                @if (Model.AllowRememberLogin)
-                                {
-                                    <div class="form-group login-remember">
-                                        <label asp-for="RememberLogin">
-                                            <input asp-for="RememberLogin">
-                                            <strong>Remember My Login</strong>
-                                        </label>
-                                    </div>
-                                }
-                                <div class="form-group">
-                                    <button class="btn btn-primary" name="button" value="login">登录</button>
-                                    <button class="btn btn-default" name="button" value="cancel">取消</button>
-                                    <button class="btn btn-default" name="button" asp-controller="Account" asp-action="Register">注册账号</button>
-                                </div>
-                            </fieldset>
-                        </form>
-                    </div>
-                </div>
+    <div class="overlay-container">
+        <div class="overlay">
+            <div class="overlay-panel overlay-left">
+                <h1>欢迎回来！</h1>
+                <p>请您先登录的个人信息，进行操作。</p>
+                <button class="ghost" id="signIn">登录</button>
             </div>
-        }
-
-        @if (Model.VisibleExternalProviders.Any())
-        {
-            <div class="col-md-6 col-sm-6 external-providers">
-                <div class="panel panel-default">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">External Login</h3>
-                    </div>
-                    <div class="panel-body">
-                        <ul class="list-inline">
-                            @foreach (var provider in Model.VisibleExternalProviders)
-                            {
-                                <li>
-                                    <a class="btn btn-default"
-                                       asp-controller="External"
-                                       asp-action="Challenge"
-                                       asp-route-provider="@provider.AuthenticationScheme"
-                                       asp-route-returnUrl="@Model.ReturnUrl">
-                                        @provider.DisplayName
-                                    </a>
-                                </li>
-                            }
-                        </ul>
-                    </div>
-                </div>
+            <div class="overlay-panel overlay-right">
+                <h1>你好朋友！</h1>
+                <p>输入您的个人信息注册成为会员。</p>
+                <button class="ghost" name="button" asp-controller="Account" asp-action="Register">注册</button>
             </div>
-        }
-
-        @if (!Model.EnableLocalLogin && !Model.VisibleExternalProviders.Any())
-        {
-            <div class="alert alert-warning">
-                <strong>Invalid login request</strong>
-                There are no login schemes configured for this client.
-            </div>
-        }
+        </div>
     </div>
 </div>
