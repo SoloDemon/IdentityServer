@@ -47,9 +47,9 @@ namespace IS4.AuthorizationCenter
              * 1、add-migration InitialPersistedGrantDb -c PersistedGrantDbContext -OutputDir EntityFramework/Migrations/PersistedGrantDb 
                2、add-migration InitialConfigurationDb -c ConfigurationDbContext -OutputDir EntityFramework/Migrations/ConfigurationDb
                3、add-migration InitialApplicationDb -c ApplicationDbContext -OutputDir EntityFramework/Migrations/ApplicationDb
-               4、update-database -c PersistedGrantDbContext
-               5、update-database -c ConfigurationDbContext
-               6、update-database -c ApplicationDbContext
+               4、update-database -Context PersistedGrantDbContext
+               5、update-database -Context ConfigurationDbContext
+               6、update-database -Context ApplicationDbContext
              */
             var migrationsAssembly = typeof(Startup).GetTypeInfo().Assembly.GetName().Name;
 

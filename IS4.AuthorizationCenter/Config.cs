@@ -151,7 +151,8 @@ namespace IS4.AuthorizationCenter
                     AllowOfflineAccess = true, //允许刷新token
                     AccessTokenLifetime = 60 * 60, //token过期时间1小时
                     RequirePkce = true,
-                    
+                    //Cors Configuration
+                    AllowedCorsOrigins = {"http://localhost:8080","https://localhost:8081"},
                     // 登陆后跳转地址
                     RedirectUris = { "http://localhost:33221/signin-oidc" },
 
